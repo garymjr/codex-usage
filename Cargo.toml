@@ -1,0 +1,21 @@
+[package]
+name = "codex-usage"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "codex-usage"
+path = "src/main.rs"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
+toml = "0.8"
+anyhow = "1.0"
+colored = "2.1"
+dirs = "5.0"
+strip-ansi-escapes = "0.2"
+unicode-width = "0.1"
