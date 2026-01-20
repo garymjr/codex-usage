@@ -12,6 +12,7 @@ cargo run --release
 ## Auth
 
 Reads credentials from `~/.codex/auth.json`. Supports:
+
 - OAuth tokens (`access_token`, `refresh_token`, `account_id`)
 - `OPENAI_API_KEY` format
 
@@ -32,16 +33,16 @@ Respects `CODEX_HOME` environment variable for custom codex directory.
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                     Codex Usage                      
+│                     Codex Usage                      │
 ├──────────────────────────────────────────────────────┤
-│ Plan: PRO                                            
-│ Credits: None                                        
+│ Plan: PRO                                            │
+│ Credits: None                                        │
 ├──────────────────────────────────────────────────────┤
-│ 5h Window (5h) ██░░░░░░░░░░░░░░░░░░░░░░░░░░░  7% 2h 5m
+│ 5h Window (5h) ██████████████████████████░  97% 4h 1m│
 ├──────────────────────────────────────────────────────┤
-│ Weekly Window (168h) █░░░░░░░░░░░░░░░░░░░░░  7% 6d 15h
+│ Weekly Window (168h) ██████████████████░░  92% 6d 11h│
 ├──────────────────────────────────────────────────────┤
-│ Pace: ↑ slightly ahead (+2.2%)        ETA: 4d 10h
+│ Pace: ✓ on track (+0.5%)                   ETA: 6d 1h│
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -50,4 +51,3 @@ Respects `CODEX_HOME` environment variable for custom codex directory.
 - Parses `~/.codex/auth.json` for credentials
 - Fetches usage from `https://chatgpt.com/backend-api/wham/usage`
 - Calculates pace based on elapsed time vs expected usage
-- Runs once and exits (not a long-running CLI)
