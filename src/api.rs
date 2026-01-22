@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use chrono::{DateTime, Utc};
 use reqwest::Client;
 use serde::Deserialize;
@@ -159,7 +159,10 @@ impl UsageFetcher {
         let mut request = self.client.get(&url);
 
         request = request
-            .header("Authorization", format!("Bearer {}", credentials.access_token))
+            .header(
+                "Authorization",
+                format!("Bearer {}", credentials.access_token),
+            )
             .header("User-Agent", "codex-usage")
             .header("Accept", "application/json")
             .timeout(std::time::Duration::from_secs(30));
@@ -171,14 +174,17 @@ impl UsageFetcher {
         let response = request.send().await.context("Request failed")?;
 
         let status = response.status();
-        let body = response.text().await.context("Failed to read response body")?;
+        let body = response
+            .text()
+            .await
+            .context("Failed to read response body")?;
 
         match status.as_u16() {
-            200..=299 => {
-                serde_json::from_str(&body)
-                    .with_context(|| format!("Failed to parse response: {}", body))
-            }
-            401 | 403 => Err(anyhow!("Unauthorized: Token expired or invalid. Run `codex` to re-authenticate.")),
+            200..=299 => serde_json::from_str(&body)
+                .with_context(|| format!("Failed to parse response: {}", body)),
+            401 | 403 => Err(anyhow!(
+                "Unauthorized: Token expired or invalid. Run `codex` to re-authenticate."
+            )),
             code => Err(anyhow!("API error {}: {}", code, body)),
         }
     }
@@ -250,7 +256,8 @@ impl UsageFetcher {
             normalized = DEFAULT_CHATGPT_BASE_URL.to_string();
         }
 
-        if (normalized.starts_with("https://chatgpt.com") || normalized.starts_with("https://chat.openai.com"))
+        if (normalized.starts_with("https://chatgpt.com")
+            || normalized.starts_with("https://chat.openai.com"))
             && !normalized.contains("/backend-api")
         {
             normalized.push_str("/backend-api");

@@ -27,8 +27,7 @@ pub fn load_credentials() -> Result<Credentials> {
     let content = std::fs::read_to_string(&auth_path)
         .with_context(|| format!("Failed to read auth.json from {}", auth_path.display()))?;
 
-    let auth: AuthJson = serde_json::from_str(&content)
-        .context("Failed to parse auth.json")?;
+    let auth: AuthJson = serde_json::from_str(&content).context("Failed to parse auth.json")?;
 
     if let Some(api_key) = auth.openai_api_key {
         if !api_key.trim().is_empty() {
@@ -39,7 +38,8 @@ pub fn load_credentials() -> Result<Credentials> {
         }
     }
 
-    let tokens = auth.tokens
+    let tokens = auth
+        .tokens
         .context("No tokens found in auth.json. Run `codex` to log in.")?;
 
     Ok(Credentials {

@@ -24,10 +24,18 @@ pub struct UsagePace {
 }
 
 impl UsagePace {
-    pub fn from_window(window: &WindowSnapshot, now: DateTime<Utc>, default_window_minutes: i64) -> Option<Self> {
+    pub fn from_window(
+        window: &WindowSnapshot,
+        now: DateTime<Utc>,
+        default_window_minutes: i64,
+    ) -> Option<Self> {
         let reset_time = DateTime::from_timestamp(window.reset_at, 0)?;
         let window_minutes = (window.limit_window_seconds / 60) as i64;
-        let window_minutes = if window_minutes > 0 { window_minutes } else { default_window_minutes };
+        let window_minutes = if window_minutes > 0 {
+            window_minutes
+        } else {
+            default_window_minutes
+        };
 
         let duration_sec = window_minutes as f64 * 60.0;
         let time_until_reset = (reset_time - now).num_seconds().max(0) as f64;
