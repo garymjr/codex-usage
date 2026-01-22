@@ -52,10 +52,12 @@ pub fn display_usage(response: &UsageResponse) {
         // Pace for weekly window
         if let Some(window) = &rate_limit.secondary_window {
             if let Some(pace) = UsagePace::from_window(window, chrono::Utc::now(), 10080) {
-                display_pace_line(&pace, WIDTH);
+                let reset_label_width = reset_label_width(window);
+                display_pace_line(&pace, WIDTH, reset_label_width);
             } else if let Some(primary) = &rate_limit.primary_window {
                 if let Some(pace) = UsagePace::from_window(primary, chrono::Utc::now(), 300) {
-                    display_pace_line(&pace, WIDTH);
+                    let reset_label_width = reset_label_width(primary);
+                    display_pace_line(&pace, WIDTH, reset_label_width);
                 }
             }
         }
@@ -99,7 +101,7 @@ fn display_window_line(window: &WindowSnapshot, label: &str, width: usize) {
 
     let indicator = apply_color("●", status_color);
     let label_colored = label.bold();
-    let percent_str = format!("{:>3}%", used);
+    let percent_str = format!("{:>3}%", remaining);
     let percent_colored = apply_color(&percent_str, status_color);
     let reset_colored = format!("reset {}", reset).dimmed();
 
@@ -113,7 +115,7 @@ fn display_window_line(window: &WindowSnapshot, label: &str, width: usize) {
         .saturating_sub(1)
         .max(10);
 
-    let fill_width = ((used as f64 / 100.0) * bar_width as f64) as usize;
+    let fill_width = ((remaining as f64 / 100.0) * bar_width as f64) as usize;
     let fill = fill_width.min(bar_width);
 
     let filled = "█".repeat(fill);
@@ -131,7 +133,7 @@ fn display_window_line(window: &WindowSnapshot, label: &str, width: usize) {
     print_line(&line, width);
 }
 
-fn display_pace_line(pace: &UsagePace, width: usize) {
+fn display_pace_line(pace: &UsagePace, width: usize, reset_label_width: usize) {
     let stage_color = match pace.stage {
         crate::pace::Stage::OnTrack => "green",
         crate::pace::Stage::SlightlyAhead
@@ -158,13 +160,25 @@ fn display_pace_line(pace: &UsagePace, width: usize) {
     let visible_part1 = visible_len(&part1_colored);
     let visible_part2 = visible_len(&part2_colored);
 
-    let padding = width
-        .saturating_sub(visible_part1)
-        .saturating_sub(1)
-        .saturating_sub(visible_part2);
+    let reset_start = width.saturating_sub(reset_label_width);
+    let max_start = width.saturating_sub(visible_part2);
+    let min_start = visible_part1.saturating_add(1);
+    let start = reset_start.min(max_start).max(min_start.min(max_start));
+    let padding = start.saturating_sub(visible_part1);
 
-    let inner = format!("{}{}{}", part1_colored, " ".repeat(padding), part2_colored);
+    let inner = format!(
+        "{}{}{}",
+        part1_colored,
+        " ".repeat(padding),
+        part2_colored
+    );
     print_line(&inner, width);
+}
+
+fn reset_label_width(window: &WindowSnapshot) -> usize {
+    let reset = format_reset_time(window.reset_at);
+    let reset_label = format!("reset {}", reset);
+    visible_len(&reset_label)
 }
 
 fn apply_color(text: &str, color: &str) -> ColoredString {
