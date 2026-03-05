@@ -1,15 +1,14 @@
 mod api;
 mod auth;
-mod display;
+mod output;
 mod pace;
 
 use anyhow::Result;
-use colored::Colorize;
 
 #[tokio::main]
 async fn main() {
     if let Err(e) = run().await {
-        eprintln!("{} {}", "Error:".red().bold(), e);
+        eprintln!("Error: {}", e);
         std::process::exit(1);
     }
 }
@@ -22,8 +21,8 @@ async fn run() -> Result<()> {
     let fetcher = api::UsageFetcher::new();
     let response = fetcher.fetch_usage(&credentials).await?;
 
-    // Display usage
-    display::display_usage(&response);
+    let output = output::JsonOutput::from_response(&response);
+    println!("{}", serde_json::to_string(&output)?);
 
     Ok(())
 }

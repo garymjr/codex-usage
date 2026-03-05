@@ -1,5 +1,4 @@
 use anyhow::{Context, Result, anyhow};
-use chrono::{DateTime, Utc};
 use reqwest::Client;
 use serde::Deserialize;
 use std::path::PathBuf;
@@ -270,32 +269,5 @@ impl UsageFetcher {
 impl Default for UsageFetcher {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-pub fn format_reset_time(timestamp: i64) -> String {
-    let dt = DateTime::<Utc>::from_timestamp(timestamp, 0)
-        .unwrap_or_else(|| DateTime::from_timestamp(0, 0).unwrap());
-    let now = Utc::now();
-    let duration = dt.signed_duration_since(now);
-
-    if duration.num_hours() > 24 {
-        let days = duration.num_days();
-        let hours = duration.num_hours() % 24;
-        if hours > 0 {
-            format!("{}d {}h", days, hours)
-        } else {
-            format!("{}d", days)
-        }
-    } else if duration.num_minutes() > 60 {
-        let hours = duration.num_hours();
-        let minutes = duration.num_minutes() % 60;
-        if minutes > 0 {
-            format!("{}h {}m", hours, minutes)
-        } else {
-            format!("{}h", hours)
-        }
-    } else {
-        format!("{}m", duration.num_minutes())
     }
 }

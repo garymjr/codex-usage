@@ -1,6 +1,6 @@
 # codex-usage
 
-CLI to display current Codex (OpenAI) usage with 5-hour window, weekly window, and pace.
+CLI that returns current Codex (OpenAI) usage as JSON, including 5-hour and weekly windows plus pace data.
 
 ## Usage
 
@@ -18,36 +18,59 @@ Reads credentials from `~/.codex/auth.json`. Supports:
 
 Respects `CODEX_HOME` environment variable for custom codex directory.
 
-## Display
-
-- **Plan**: Current subscription plan (PRO, PLUS, etc.)
-- **Credits**: Account credit balance or "Unlimited"
-- **5h Window**: 5-hour rolling usage limit with progress bar
-- **Weekly Window**: Weekly usage limit with progress bar
-- **Pace**: Usage pace indicator
-  - **↑/↓**: Ahead/behind of expected usage
-  - **(±X%)**: Delta from expected percentage
-  - **ETA**: Time until quota at current rate
-
 ## Output
 
+```json
+{
+  "fetched_at": "2026-03-04T22:00:00+00:00",
+  "fetched_at_unix": 1772661600,
+  "plan": "pro",
+  "credits": {
+    "has_credits": false,
+    "unlimited": false,
+    "balance": null
+  },
+  "windows": {
+    "five_hour": {
+      "used_percent": 22,
+      "remaining_percent": 78,
+      "reset_at": 1772672400,
+      "reset_in_seconds": 10800,
+      "window_seconds": 18000,
+      "window_minutes": 300
+    },
+    "weekly": {
+      "used_percent": 44,
+      "remaining_percent": 56,
+      "reset_at": 1773266400,
+      "reset_in_seconds": 604800,
+      "window_seconds": 604800,
+      "window_minutes": 10080
+    }
+  },
+  "pace": {
+    "source_window": "weekly",
+    "stage": "on_track",
+    "delta_percent": 1.2,
+    "expected_used_percent": 42.8,
+    "actual_used_percent": 44.0,
+    "eta_seconds": null,
+    "will_last_to_reset": true
+  }
+}
 ```
-┌──────────────────────────────────────────────────────┐
-│                     Codex Usage                      │
-├──────────────────────────────────────────────────────┤
-│ Plan: PRO                                            │
-│ Credits: None                                        │
-├──────────────────────────────────────────────────────┤
-│ 5h Window (5h) ██████████████████████████░  97% 4h 1m│
-├──────────────────────────────────────────────────────┤
-│ Weekly Window (168h) ██████████████████░░  92% 6d 11h│
-├──────────────────────────────────────────────────────┤
-│ Pace: ✓ on track (+0.5%)                   ETA: 6d 1h│
-└──────────────────────────────────────────────────────┘
+
+## tmux + jq
+
+Use a short formatter in `~/.tmux.conf`:
+
+```tmux
+set -g status-interval 60
+set -g status-right '#(~/Developer/codex-usage/target/release/codex-usage | jq -r "\"5h:\(.windows.five_hour.remaining_percent // \"?\")% wk:\(.windows.weekly.remaining_percent // \"?\")%\"")'
 ```
 
 ## Implementation
 
 - Parses `~/.codex/auth.json` for credentials
 - Fetches usage from `https://chatgpt.com/backend-api/wham/usage`
-- Calculates pace based on elapsed time vs expected usage
+- Returns JSON with normalized fields for plan, credits, windows, and pace

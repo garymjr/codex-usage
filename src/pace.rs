@@ -13,7 +13,6 @@ pub enum Stage {
 }
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub struct UsagePace {
     pub stage: Stage,
     pub delta_percent: f64,
@@ -107,55 +106,6 @@ impl UsagePace {
         }
     }
 
-    pub fn stage_emoji(&self) -> &'static str {
-        match self.stage {
-            Stage::OnTrack => "✓",
-            Stage::SlightlyAhead => "↑",
-            Stage::Ahead => "↑↑",
-            Stage::FarAhead => "↑↑↑",
-            Stage::SlightlyBehind => "↓",
-            Stage::Behind => "↓↓",
-            Stage::FarBehind => "↓↓↓",
-        }
-    }
-
-    pub fn stage_description(&self) -> &'static str {
-        match self.stage {
-            Stage::OnTrack => "on track",
-            Stage::SlightlyAhead => "slightly ahead",
-            Stage::Ahead => "ahead",
-            Stage::FarAhead => "far ahead",
-            Stage::SlightlyBehind => "slightly behind",
-            Stage::Behind => "behind",
-            Stage::FarBehind => "far behind",
-        }
-    }
-
-    pub fn format_eta(&self) -> String {
-        if self.will_last_to_reset {
-            "until reset".to_string()
-        } else if let Some(eta) = self.eta_seconds {
-            let eta = eta as i64;
-            if eta > 86400 {
-                let days = eta / 86400;
-                let hours = (eta % 86400) / 3600;
-                format!("{}d {}h", days, hours)
-            } else if eta > 3600 {
-                let hours = eta / 3600;
-                let minutes = (eta % 3600) / 60;
-                format!("{}h {}m", hours, minutes)
-            } else {
-                format!("{}m", eta / 60)
-            }
-        } else {
-            "unknown".to_string()
-        }
-    }
-
-    pub fn format_delta(&self) -> String {
-        let sign = if self.delta_percent >= 0.0 { "+" } else { "" };
-        format!("{}{:.1}%", sign, self.delta_percent)
-    }
 }
 
 #[cfg(test)]
